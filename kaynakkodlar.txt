@@ -1,0 +1,246 @@
+struct hizmetler{
+
+  int hizmetID;
+  char hizmetAD[15];
+  int kalanHizmet;
+  int fiyat;
+  int malzemeAdet;
+ 
+
+} kop,yik,kur,cil;
+
+
+struct Kasa{
+
+  int bes,on,yirmi,elli,yuz,KasaToplam;
+ 
+
+} K;
+
+int b1,b2,b3,b4,b5,b6,b7=0;
+
+int durum,alinanPara,hizmetTutari=0;
+
+
+
+
+
+
+void paraAlindi(){ 
+  K.KasaToplam = K.bes*5 +  K.on*10 +  K.yirmi*20 +  K.elli*50 +  K.yuz*100;
+  K.bes  +=b1;
+  K.on   +=b2;
+  K.yirmi+=b3;
+  K.elli +=b4;
+  K.yuz  +=b5;
+  
+  alinanPara=b1*5 + b2*10 + b3*20 + b4*50 + b5*100;
+  K.KasaToplam+=alinanPara;
+  Serial.print("Yuklenen Miktar = ");delay(50);
+  Serial.println(alinanPara);
+  Serial.print("\nHIZMET SECIMI:\n1:Kopukleme 15 TL\n2:Yikama 10 TL\n3:Kurulama 5 TL\n4:Cilalama 50 TL \n\n5:para iade\n6:onaylama\n7:secimleri temizle");
+  
+  butonReset();   // buton sayacları 0 landı
+  durum=1; // hizmet seçimine yönlendiriliyor
+ 
+}
+
+
+
+void hizmetSecildi(){
+
+  int PARASIKISMA =random(1,5);
+  
+
+  hizmetTutari = b1*15 + b2*10 + b3*5 + b4*50;
+  Serial.print("\n\nHIZMET TUTARINIZ => ");Serial.print(hizmetTutari);
+  if(b1>kop.kalanHizmet || b2>yik.kalanHizmet || b3>kur.kalanHizmet || b4>cil.kalanHizmet) { Serial.print("\nYETERLI MALZEME BULUNAMADI! TEKRAR SEÇINIZ");butonReset();}
+  else if(hizmetTutari> alinanPara){ Serial.print("\nYETERSIZ BAKIYE!!");reset(); }
+  else if(PARASIKISMA==2){ 
+  
+  Serial.print("\n PARA SIKISMA HATASI!!\n PARANIZ IDADE EDILMISTIR TEKRAR YUKLEME YAPINIZ"); 
+  digitalWrite(13, HIGH);b2++;delay(2000);
+  hizmetTutari=0;
+  paraUstu();
+  durum=0; // para giris durumuna geri gelindi
+  ekranlar();  // para ekranı 
+  butonReset();
+  }
+  
+  else {
+  
+    kop.kalanHizmet   -=b1;
+    yik.kalanHizmet   -=b2;
+    kur.kalanHizmet   -=b3;
+    cil.kalanHizmet   -=b4;
+    
+    Serial.print("\nhizmetiniz tamamlanmistir fisinizi almayi unutmayin ");butonReset();
+    digitalWrite(12, HIGH);b2++;delay(1500);
+    paraUstu();
+    
+     butonReset();
+     durum=0; delay(50);// para giris durumuna geri gelindi
+     ekranlar();  // para ekranı 
+    
+  }
+  
+  ////// sondurum nolacak burada yaz
+
+
+ 
+  
+}
+
+
+
+void paraUstu(){
+ int paraustu = alinanPara - hizmetTutari;
+ Serial.print("\n\n ALACAGINIZ PARA USTUNUZ TOPLAM =  ");
+  Serial.print(paraustu);
+  if(paraustu>K.KasaToplam){ Serial.print("\n\n makine bakiyesi yetersiz, lütfen merkez ile İletisime geciniz. ");}
+  else{
+   int paraustu2 = paraustu;
+   
+  
+ int Xyuz   = paraustu/100; while(Xyuz>K.yuz)     {Xyuz--;} paraustu -= 100*Xyuz;
+ int Xelli  = paraustu/50;  while(Xelli>K.elli)   {Xelli--;} paraustu -= 50*Xelli;
+ int Xyirmi = paraustu/20;  while(Xyirmi>K.yirmi) {Xyirmi--;} paraustu -= 20*Xyirmi;
+ int Xon    = paraustu/10;  while(Xon>K.on)       {Xon--;} paraustu -= 10*Xon;
+ int Xbes   = paraustu/5;   while(Xbes>K.bes)     {Xbes--;} paraustu -= 5*Xbes;
+    if(paraustu!=0){Serial.print("\n BANKNOT UYUSMAZLIGINDAN IADE ISLEMI YAPILAMAMAKTADIR!\n LUTFEN MERKEZ BIRIMIMIZLE ILETISIME GECINIZ\n");}
+    else{
+     K.KasaToplam -= paraustu2;       // kasadan dustuk paraustunu
+     K.bes-=Xbes;K.on-=Xon;K.yirmi-=Xyirmi;K.elli-=Xelli;K.yuz-=Xyuz;  // secilen min banknotları dusuyoruz
+                                 
+                                 
+    Serial.print("\n\nPARANIZIN SIRASIYLA 100 50 20 10 5 TL ADEDİ    ");
+    Serial.print(Xyuz);Serial.print(" ");
+    Serial.print(Xelli);Serial.print(" ");
+    Serial.print(Xyirmi);Serial.print(" ");
+    Serial.print(Xon);Serial.print(" ");
+    Serial.print(Xbes);Serial.print(" ");
+    
+    Serial.print("\n\nKASANIN SIRASIYLA 100 50 20 10 5 TL ADEDİ    ");
+    Serial.print(K.yuz);Serial.print(" ");
+    Serial.print(K.elli);Serial.print(" ");
+    Serial.print(K.yirmi);Serial.print(" ");
+    Serial.print(K.on);Serial.print(" ");
+    Serial.print(K.bes);Serial.print(" Kasa Toplam Para = ");
+    Serial.print(K.KasaToplam);Serial.print(" \n");
+    
+    }
+   
+    
+  }
+}
+
+
+
+void reset(){ hizmetTutari=0;b1=0;b2=0;b3=0;b4=0;b5=0;Serial.print("\n\n SECIMLERINIZ IPTAL EDILDI, TEKRAR SECINIZ ");}
+void butonReset(){ b1=0;b2=0;b3=0;b4=0;b5=0;}
+void ekranlar(){
+  if(durum==0){Serial.print("\n LUTFEN PARA GIRISI YAPINIZ\n1:  5 TL\n2:  10 TL\n3:  20 TL\n4:  50 TL\n5:  100 TL\n\n");delay(50);}
+  else if(durum=1){}
+}
+
+
+
+
+
+
+
+
+void setup()
+{    
+  
+  pinMode(13, OUTPUT); // led kırmızı
+  pinMode(12, OUTPUT); // led yesil
+  pinMode(8, INPUT);  // 5 tl  or kopukleme 15 tl
+  pinMode(2, INPUT);  // 10 tl or yıkama   10
+  pinMode(3, INPUT);  // 20 tl or kurulama  5
+  pinMode(4, INPUT);  // 50 tl or cilalama 50 tl
+  pinMode(5, INPUT);
+  pinMode(6, INPUT); // tamam butonu
+  pinMode(7, INPUT); // RESET BUTONU
+  Serial.begin(9600);
+  Serial.print("KOU ARAC YIKAMA MAKINESINE HOSGELDINIZ\n LUTFEN PARA GIRISI YAPINIZ"
+              "\n1:  5 TL\n2:  10 TL\n3:  20 TL\n4:  50 TL\n5:  100 TL\n\n");
+  //////////////////////////////////////////////// txt den okunması gereken kısım
+  kop.hizmetID = 1;
+  // kop.hizmetAD     = "kopukleme";
+  kop.kalanHizmet = 20;
+  kop.fiyat=15;
+  kop.malzemeAdet=20;
+  
+  yik.hizmetID = 2;
+  // yik.hizmetAD     = "yikama";
+  yik.kalanHizmet = 20;
+  yik.fiyat=10;
+  yik.malzemeAdet=20;
+  
+  kur.hizmetID = 3;
+  // kur.hizmetAD     = "kurulama";
+  kur.kalanHizmet = 20;
+  kur.fiyat=5;
+  kur.malzemeAdet=20;
+  
+  cil.hizmetID = 4;
+ // cil.hizmetAD     = "cilalama";
+  cil.kalanHizmet = 20;
+  cil.fiyat=50;
+  cil.malzemeAdet=20;
+  
+  K.bes    = 0;
+  K.on     = 0;
+  K.yirmi  = 0;
+  K.elli   = 0;
+  K.yuz    = 0; 
+  
+  ///////////////////////////////////////////////////////////////////////
+  durum=0;
+
+}
+
+void loop(){
+   
+ 
+   if (HIGH == digitalRead(8)) {
+   digitalWrite(13, HIGH);b1++;delay(200);
+   }
+  
+  else if(HIGH == digitalRead(2)){
+    digitalWrite(13, HIGH);b2++;delay(200);
+  }
+  
+  else if(HIGH == digitalRead(3)){
+    digitalWrite(13, HIGH);b3++;delay(200);
+  }
+  
+  else if(HIGH == digitalRead(4)){
+    digitalWrite(13, HIGH);b4++;delay(200);
+  }  
+  else if(HIGH == digitalRead(5)){
+    digitalWrite(13, HIGH);b5++;delay(200);
+    if(durum==1) // hizmet seçiminde çıkıs ıcın
+    {durum=0;hizmetTutari=0;paraUstu();reset();ekranlar();}
+  } 
+  else if(HIGH == digitalRead(6)){ // bitiş
+        delay(200);
+     if(b1+b2+b3+b4+b5==0 && durum==0){Serial.print("Para yuklemeniz bekleniyor\n ");}
+else if(b1+b2+b3+b4==0 && durum==1){Serial.print("Hızmet secmeniz bekleniyor\n ");}  
+else if(durum==1){hizmetSecildi();}
+else if(durum==0){ paraAlindi();}
+       
+        
+    }  
+  else if(HIGH == digitalRead(7)){
+    reset();delay(200);}
+  
+  
+  
+  
+ 
+digitalWrite(13, LOW);
+digitalWrite(12, LOW);
+
+}
